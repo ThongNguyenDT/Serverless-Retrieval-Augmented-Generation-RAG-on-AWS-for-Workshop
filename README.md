@@ -5,6 +5,10 @@
 
 To learn more about this architecture, please refer to [this article](https://bit.ly/community-serverless-rag).
 
+Source repo of this project name ***Serverless-Retrieval-Augmented-Generation-RAG-on-AWS***, please refer to [Repo](https://github.com/aws-samples/Serverless-Retrieval-Augmented-Generation-RAG-on-AWS)
+
+This repo is my modified fix the hard code of main repo 🏹
+
 ## Demo
 ![Application Demo](./assets/fsrag-demo.gif)
 
