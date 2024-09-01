@@ -50,7 +50,7 @@ export class ServerlessRagOnAws extends Stack {
   constructor(scope: Construct, id: string, props: ServerlessRagOnAwsProps) {
     super(scope, id, props);
 
-    const {embedding} = props;
+    const { embedding } = props;
 
     // BACKEND
 
@@ -83,30 +83,30 @@ export class ServerlessRagOnAws extends Stack {
 
     // Add S3 event notification to SQS for object creation for pdfs only
     documentsBucket.addEventNotification(
-      s3.EventType.OBJECT_CREATED, 
+      s3.EventType.OBJECT_CREATED,
       new s3Notifications.SqsDestination(queue),
-      {suffix: ".pdf"}
+      { suffix: ".pdf" }
     );
 
     // Add S3 event notification to SQS for object creation for PDFs only
     documentsBucket.addEventNotification(
-      s3.EventType.OBJECT_CREATED, 
+      s3.EventType.OBJECT_CREATED,
       new s3Notifications.SqsDestination(queue),
-      {suffix: ".PDF"}
+      { suffix: ".PDF" }
     );
 
     // Add S3 event notification to SQS for object deletion
     documentsBucket.addEventNotification(
-      s3.EventType.OBJECT_REMOVED, 
+      s3.EventType.OBJECT_REMOVED,
       new s3Notifications.SqsDestination(queue),
-      {suffix: ".pdf"}
+      { suffix: ".pdf" }
     );
 
     // Add S3 event notification to SQS for object deletion
     documentsBucket.addEventNotification(
-      s3.EventType.OBJECT_REMOVED, 
+      s3.EventType.OBJECT_REMOVED,
       new s3Notifications.SqsDestination(queue),
-      {suffix: ".PDF"}
+      { suffix: ".PDF" }
     );
 
     /* dynamodb table for document registry */
@@ -119,7 +119,7 @@ export class ServerlessRagOnAws extends Stack {
       removalPolicy: RemovalPolicy.DESTROY
     });
 
-    const documentRegistryTableIndexOnS3Path : string = 's3_path_index';
+    const documentRegistryTableIndexOnS3Path: string = 's3_path_index';
 
     documentRegistryTable.addGlobalSecondaryIndex({
       indexName: documentRegistryTableIndexOnS3Path,
@@ -151,11 +151,11 @@ export class ServerlessRagOnAws extends Stack {
     const webDistribution = new cloudfront.CloudFrontWebDistribution(this, 'WebDistribution', {
       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       defaultRootObject: 'index.html',
-      errorConfigurations:[{
+      errorConfigurations: [{
         // redirecting 403 to index.html as we're making use of react router
-          errorCode: 403,
-          responsePagePath: '/index.html',
-          responseCode: 200,
+        errorCode: 403,
+        responsePagePath: '/index.html',
+        responseCode: 200,
       }],
       originConfigs: [
         {
@@ -173,7 +173,7 @@ export class ServerlessRagOnAws extends Stack {
       handler: 'index.handler',
       code: lambda.Code.fromAsset('lambda/frontend-invalidation/'),
       environment: {
-          DISTRIBUTION_ID: webDistribution.distributionId
+        DISTRIBUTION_ID: webDistribution.distributionId
       },
       timeout: Duration.seconds(300),
     });
@@ -183,13 +183,13 @@ export class ServerlessRagOnAws extends Stack {
 
     // Grant the Lambda function permission to invalidate CloudFront distributions
     invalidateLambda.addToRolePolicy(new iam.PolicyStatement({
-        actions: ['cloudfront:CreateInvalidation'],
-        resources: [distributionArn], // Consider restricting this to specific resources
+      actions: ['cloudfront:CreateInvalidation'],
+      resources: [distributionArn], // Consider restricting this to specific resources
     }));
 
     // Add the S3 event notification to trigger the Lambda function on index.html update
     frontendBucket.addEventNotification(s3.EventType.OBJECT_CREATED, new s3Notifications.LambdaDestination(invalidateLambda), {
-        prefix: 'index.html',
+      prefix: 'index.html',
     });
 
     // Update the S3 bucket policy to allow access only from the OAI
@@ -222,8 +222,8 @@ export class ServerlessRagOnAws extends Stack {
     const userPoolClientId = frontendAuth.resources.userPoolClient.userPoolClientId;
     const identityPoolId = frontendAuth.resources.cfnResources.cfnIdentityPool.ref;
 
-     // WebSocket Stack
-     const webSocketApi = new apigw.WebSocketApi(this, 'WebSocketApi', {
+    // WebSocket Stack
+    const webSocketApi = new apigw.WebSocketApi(this, 'WebSocketApi', {
       apiName: 'WebSocketApi',
       routeSelectionExpression: '$request.body.action',
     });
@@ -345,7 +345,7 @@ export class ServerlessRagOnAws extends Stack {
       // we want to limit the maximum number of concurrent executions to one until LanceDB supports concurrent writers
       // As of now, LanceDB provides a solution for concurrents write but in experimental mode:
       // https://lancedb.github.io/lance/read_and_write.html#concurrent-writer-on-s3-using-dynamodb
-      reservedConcurrentExecutions: 1, 
+      reservedConcurrentExecutions: 1,
       timeout: Duration.minutes(5),
       environment: {
         WEBSOCKET_ENDPOINT: `wss://${webSocketApi.apiId}.execute-api.${this.region}.amazonaws.com/${deployment.stageName}`,
@@ -446,7 +446,7 @@ export class ServerlessRagOnAws extends Stack {
               `arn:aws:ssm:${this.region}:${this.account}:parameter/${this.stackName}/default*`,
               `arn:aws:ssm:${this.region}:${this.account}:parameter/${this.stackName}/` + "${cognito-identity.amazonaws.com:sub}*",
             ]
-      })
+          })
         ]
       })
     );
@@ -484,7 +484,7 @@ export class ServerlessRagOnAws extends Stack {
       ],
       resources: ['*'],
     }));
-    
+
     // Grant necessary permissions to the Lambda Processor function to invoke Bedrock
     lambdaDocumentProcessorFunction_Docker.addToRolePolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
@@ -523,7 +523,7 @@ export class ServerlessRagOnAws extends Stack {
     lambdaInferenceFunction.addToRolePolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: ['s3:ListBucket'],
-      resources: [ lanceDbVectorBucket.bucketArn],
+      resources: [lanceDbVectorBucket.bucketArn],
     }));
 
     // Create Lambda function URL
@@ -566,7 +566,7 @@ export class ServerlessRagOnAws extends Stack {
       auth: {
         user_pool_id: userPoolId,
         aws_region: this.region,
-        user_pool_client_id:userPoolClientId,
+        user_pool_client_id: userPoolClientId,
         identity_pool_id: identityPoolId,
         standard_required_attributes: ["email"],
         username_attributes: ["email"],

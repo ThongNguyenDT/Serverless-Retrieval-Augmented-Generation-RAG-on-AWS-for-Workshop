@@ -10,7 +10,7 @@ import {
 
 function Settings({ signOut, user, appConfig }) {
 
-    const stackName = appConfig.websocketStateTable.split("-")[0];
+    const stackName = appConfig.stackName;
 
     const [creds, setCreds] = useState({});
     const [loading, setLoading] = useState(true);
